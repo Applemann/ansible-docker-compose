@@ -1,0 +1,82 @@
+- name: Install docker dependencies
+  apt: name={{ item }} update_cache=yes
+  with_items:
+      - apt-transport-https 
+      - ca-certificates 
+      - curl 
+      - gnupg2 
+      - software-properties-common
+      - python3-setuptools
+
+
+- name: Remove python3-pip
+  apt: name=pip3-python update_cache=no state=absent
+
+
+- name: Add official GPG key
+  shell: curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+  #- apt_repository:
+  #    repo: deb http://archive.canonical.com/ubuntu hardy partner
+  #    state: present
+
+- name: Add repository
+  shell: 'sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"'
+
+- name: Install docker-ce
+  apt: name=docker-ce={{ docker_version }} update_cache=yes
+
+- name: Install easy_install
+  easy_install:
+    name: pip
+    state: latest
+    executable: easy_install3
+
+- name: Remove docker-py
+  pip: name={{ item }} executable=pip3 state=absent
+  with_items:
+      - "docker-py"
+      - "docker"
+
+- name: Install docker pip packages
+  pip: name={{ item }} executable=pip3
+  with_items:
+      - "docker"
+      - "docker-compose==1.11.2"
+
+- name: Create docker directory
+  file:
+    path: /root/.docker
+    state: directory
+    mode: 0600
+
+- template:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0600
+  notify: reload docker
+
+- copy:
+    src: docker.service
+    dest: /lib/systemd/system/docker.service
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart docker
+
+- template:
+    src: config.json
+    dest: /root/.docker/config.json
+    owner: root
+    group: root
+    mode: 0600
+
+- file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
+    mode: 0666
+
+- name: Set docker permission after startup
+  cron: name="Set docker permission after startup" special_time="reboot" job="chmod 666 /var/run/docker.sock" state=present

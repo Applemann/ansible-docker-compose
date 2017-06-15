@@ -1,0 +1,5 @@
+- name: "restart {{ compose.mainapp.container_name }}"
+  supervisorctl: name={{ compose.mainapp.container_name }} state=restarted
+
+- name: update supervisor
+  shell: supervisorctl reread && supervisorctl update

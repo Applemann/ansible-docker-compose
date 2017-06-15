@@ -1,0 +1,40 @@
+user: root
+
+##--  Compose  --##
+
+app_name: redis
+app_container_name: "{{ app_name }}"
+app_version: "{{ redis_version }}"
+app_host_port: 6379
+app_container_port: 6379
+app_homedir: "/opt/{{ app_container_name }}-data"
+
+
+compose:
+  mainapp:
+    name: "{{ app_name }}"
+    container_name: "{{ app_container_name }}"
+    container_hostname: "{{ app_container_name }}" 
+   
+    host_port: "{{ app_host_port }}"
+    container_port: "{{ app_host_port }}"
+
+    image: "{{ app_name }}:{{ app_version }}"
+
+    home_dir: "{{ app_homedir }}"
+    home_dir_exists: true
+    home_dir_backup: true
+
+    ports: 
+      - "127.0.0.1:{{ app_host_port }}:{{ app_container_port }}"
+      - "{{ ip_address }}:{{ app_host_port }}:{{ app_container_port }}"
+
+    volumes:
+      - "{{ app_homedir }}:/data"
+    links:
+    environments:
+    entrypoint: "redis-server /data/{{ app_container_name }}.conf"
+    extra_hosts:
+    command:
+
+

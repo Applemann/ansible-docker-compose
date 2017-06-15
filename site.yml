@@ -1,0 +1,30 @@
+- name: All roles
+  hosts: all
+  
+  vars:
+      mysql_root_password: testpass
+      ip_address: "{{ ansible_eth0.ipv4.address }}"
+      address:
+          extra-host1: 172.50.20.37
+          extra-host2: 172.50.20.30
+          extra-host3: 172.50.20.19
+
+      docker_version: 17.03.1~ce-0~debian-jessie
+      docker_username: applemann
+      docker_password: pass
+      docker_auth_token: auth_token 
+      docker_email: applemann@email.com
+      docker_owner: martin
+      docker_port: 2376
+
+      backup_dir: /root/backup
+     
+      jenkins_version: "2.46.2"
+      redis_version: "3.2.8"
+
+  roles:
+      - { role: redis-container, tags: ['redis'] }
+      - { role: jenkins-container, tags: ['jenkins'] }
+
+
+

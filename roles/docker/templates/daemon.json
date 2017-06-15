@@ -1,0 +1,4 @@
+{
+    "live-restore": true,
+    "hosts": ["tcp://127.0.0.1:{{ docker_port }}", "tcp://{{ ip_address }}:{{ docker_port }}", "unix:///var/run/docker.sock"]
+}

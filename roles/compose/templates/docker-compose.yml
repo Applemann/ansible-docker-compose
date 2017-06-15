@@ -1,0 +1,54 @@
+version: "3"
+services:
+
+{% for service in compose %}
+{% set service = compose[service] %}
+  {{ service.name }}:
+    image: {{ service.image }}
+    container_name: {{ service.container_name }}
+    hostname: {{ service.container_hostname }}
+{# #}
+{% if service.ports != None and 'ports' in service %}
+    ports:
+{% for port in service.ports %}
+      - {{ port }}
+{% endfor %}
+{%- endif %}
+{# #}
+{% if service.links != None and 'links' in service %}
+    links:
+{% for link in service.links %}
+      - {{ link }}
+{% endfor %}
+{%- endif %}
+{# #}
+{% if service.environments != None and 'environments' in service %}
+    environment:
+{% for env in service.environments %}
+      - {{ env }}
+{% endfor %}
+{%- endif %}
+{# #}
+{% if service.volumes != None and 'volumes' in service %}
+    volumes:
+{% for volume in service.volumes %}
+      - {{ volume }}
+{% endfor %}
+{%- endif %}
+{# #}
+{% if service.extra_hosts != None and 'extra_hosts' in service %}
+    extra_hosts:
+{% for extra_host in service.extra_hosts %}
+      - {{ extra_host }}
+{% endfor %}
+{% endif %}
+{# #}
+{% if service.entrypoint != None %}
+    entrypoint: {{ service.entrypoint }}
+{% endif %}
+{# #}
+{% if 'command' in service %}
+    command: {{ service.command }}
+{% endif %}
+
+{% endfor %}

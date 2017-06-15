@@ -1,0 +1,66 @@
+- debug:
+    msg: "{{ compose }}"
+
+- file:
+    path: /etc/docker/compose/{{ compose.mainapp.container_name }}
+    state: directory
+    recurse: yes
+    mode: 0644
+
+
+- name: Copy docker-compose.yml for {{ compose.mainapp.container_name }} application
+  template:
+    src: docker-compose.yml
+    dest: /etc/docker/compose/{{ compose.mainapp.container_name }}/docker-compose.yml
+    owner: root
+    group: root
+    mode: 0644
+  notify: update supervisor
+
+
+- name: Install supervisor
+  apt: name=supervisor update_cache=yes
+
+
+- name: Copy supervisor config
+  template:
+    src: supervisor.conf
+    dest: /etc/supervisor/conf.d/{{ compose.mainapp.container_name }}.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: update supervisor
+
+- name: Create directory {{ compose.mainapp.home_dir }}
+  file:
+    path: "{{ compose.mainapp.home_dir }}"
+    state: directory
+    owner: "{{ docker_owner }}"
+    recurse: yes
+    mode: 0700
+  when: compose.mainapp.home_dir_exists == true
+
+- name: Create {{ compose.mainapp.container_name }} directory for backup
+  file:
+    path: "{{ backup_dir }}/{{ compose.mainapp.container_name }}/"
+    state: directory
+    recurse: yes
+    mode: 0666
+
+- name: Backup {{ compose.mainapp.container_name }} home directory
+  cron: 
+    name: "Backup {{ compose.mainapp.container_name }} home directory"
+    minute: "0"
+    hour: "1"
+    job: "rsync -a {{ compose.mainapp.home_dir }} {{ backup_dir }} > /var/log/cron/backup-{{ compose.mainapp.container_name}}.log"
+    state: present
+  when: compose.mainapp.home_dir_exists == true and compose.mainapp.home_dir_backup is not undefined and compose.mainapp.home_dir_backup == true
+
+
+- name: Pull {{ compose.mainapp.image }} image
+  docker_image:
+    name: "{{ compose.mainapp.image }}"
+    repository: "{{ compose.mainapp.image }}"
+    state: present
+  notify: "restart {{ compose.mainapp.container_name }}"
+

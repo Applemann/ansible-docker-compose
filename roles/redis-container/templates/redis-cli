@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ -n $@ ]]; then
+    docker exec -i redis redis-cli $@
+else
+    docker exec -it redis redis-cli  $@
+fi
+

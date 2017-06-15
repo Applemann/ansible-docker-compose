@@ -1,0 +1,16 @@
+- name: Copy redis config
+  template:
+    src: redis.conf
+    dest: /opt/{{ app_container_name }}-data/{{ app_container_name }}.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy redis-cli
+  template:
+    src: redis-cli
+    dest: /usr/bin/redis-cli
+    owner: root
+    group: root
+    mode: 0755
+
